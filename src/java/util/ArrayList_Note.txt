@@ -1,0 +1,13 @@
+相关练习：I:\workspace-xuxian\xuxian\src\main\java\com\xuxian\jdk8\collectionDemo\ArrayListDemo.java
+
+1.public void sort(Comparator<? super E> c):
+Arrays.sort((E[]) elementData, 0, size, c);底层原理
+
+2.public boolean removeIf(Predicate<? super E> filter):
+BitSet.nextClearBit(i);底层原理
+
+3.spliterator底层原理
+
+4.位移
+
+5.时间复杂度
