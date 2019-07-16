@@ -7,8 +7,10 @@ import java.util.function.Consumer;
  * LinkedList既然是通过双向链表去实现的，那么它可以被当作堆栈、队列或双端队列进行操作。并且其顺序访问非常高效，而随机访问效率比较低。
  * 内部方法，注释会描述为节点的操作(如删除第一个节点)，公开的方法会描述为元素的操作(如删除第一个元素)
  * 注意，此实现不是同步的。 如果多个线程同时访问一个LinkedList实例，而其中至少一个线程从结构上修改了列表，那么它必须保持外部同步。
+ *
  * LinkedList不是线程安全的，如果在多线程中使用（修改），需要在外部作同步处理。
  * 这通常是通过同步那些用来封装列表的对象来实现的。
+ *
  * 但如果没有这样的对象存在，则该列表需要运用{@link Collections#synchronizedList Collections.synchronizedList}来进行“包装”，该方法最好是在创建列表对象时完成，为了避免对列表进行突发的非同步操作。
  */
 
@@ -391,13 +393,14 @@ public class LinkedList<E>
             if (pred == null)
                 first = newNode;
             else
+                //下面两句，相当于是双向指定
                 pred.next = newNode;    //如果存在前节点，前节点会向后指向新加的节点
             pred = newNode; //pred指针向后移动，指向下一个需插入节点位置的前一个节点
         }
         //如果是从最后开始添加的，则最后添加的节点成为尾节点
         if (succ == null) {
             last = pred;
-        } else {
+        } else {//因为是双向链表，所以双向指定
             pred.next = succ;   //如果不是从最后开始添加的，则最后添加的节点向后指向之前得到的后续第一个节点
             succ.prev = pred;   //当前，后续的第一个节点也应改为向前指向最后一个添加的节点
         }
@@ -538,6 +541,7 @@ public class LinkedList<E>
 
     /**
      * 获取指定下标的结点，index从0开始
+     * 获取某节点的元素，只能遍历获取（数据结构决定）
      */
     Node<E> node(int index) {
         // 如果指定下标<一半元素数量，则从首结点开始遍历
