@@ -393,14 +393,13 @@ public class LinkedList<E>
             if (pred == null)
                 first = newNode;
             else
-                //下面两句，相当于是双向指定
                 pred.next = newNode;    //如果存在前节点，前节点会向后指向新加的节点
             pred = newNode; //pred指针向后移动，指向下一个需插入节点位置的前一个节点
         }
         //如果是从最后开始添加的，则最后添加的节点成为尾节点
         if (succ == null) {
             last = pred;
-        } else {//因为是双向链表，所以双向指定
+        } else {
             pred.next = succ;   //如果不是从最后开始添加的，则最后添加的节点向后指向之前得到的后续第一个节点
             succ.prev = pred;   //当前，后续的第一个节点也应改为向前指向最后一个添加的节点
         }
