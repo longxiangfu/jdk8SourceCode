@@ -161,7 +161,7 @@ public class LinkedList<E>
     /**
      * 删除指定非空结点，返回存储的元素
      */
-    E unlink(Node<E> x) {
+    E unlink(Node<E> x) {//改变链的指向关系即可
         // 获取指定非空结点存储的元素
         final E element = x.item;
         // 获取指定非空结点的后继结点
@@ -178,7 +178,7 @@ public class LinkedList<E>
             first = next;
         } else {
             prev.next = next;
-            x.prev = null;
+            x.prev = null;//虽然prev.next = next，但是当前节点仍指向前驱节点，所以将当前节点的前驱节点赋值为null
         }
 
         /**
