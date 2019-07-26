@@ -6,7 +6,7 @@ Arrays.sort((E[]) elementData, 0, size, c);底层原理
 2.public boolean removeIf(Predicate<? super E> filter):
 BitSet.nextClearBit(i);底层原理
 
-3.spliterator底层原理
+3.spliterator底层原理:分割迭代器     参考：https://www.cnblogs.com/nevermorewang/p/9368431.html
 
 4.位移
 
