@@ -147,7 +147,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                                     Comparable.class) &&
                             (as = p.getActualTypeArguments()) != null &&
                             as.length == 1 && as[0] == c) // type arg is c
-                        return c;
+                    return c;
                 }
             }
         }
@@ -449,9 +449,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     ((k = p.key) == key || (key != null && key.equals(k))))
                 // 将第一个元素赋值给e，用e来记录
                 e = p;
+
                 // 当前桶中无该键值对，且桶是红黑树结构，按照红黑树结构插入
             else if (p instanceof TreeNode)
                 e = ((TreeNode<K, V>) p).putTreeVal(this, tab, hash, key, value);
+
                 // 当前桶中无该键值对，且桶是链表结构，按照链表结构插入到尾部
             else {
                 for (int binCount = 0; ; ++binCount) {
@@ -467,6 +469,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     if (e.hash == hash &&
                             ((k = e.key) == key || (key != null && key.equals(k))))
                         break;
+                    //hash相等，key不相等时，将p的下一个元素e赋值给p,继续循环
                     p = e;
                 }
             }
