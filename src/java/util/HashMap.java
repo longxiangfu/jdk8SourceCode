@@ -190,7 +190,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     transient Set<Map.Entry<K, V>> entrySet;
 
     /**
-     * 实际存储的数量，则HashMap的size()方法，实际返回的就是这个值，isEmpty()也是判断该值是否为0
+     * 实际存储的key-value键值对的数量，则HashMap的size()方法，实际返回的就是这个值，isEmpty()也是判断该值是否为0
      */
     transient int size;
 
@@ -271,6 +271,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
      * @param evict 初始化map时使用false，否则使用true
      */
     final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
+        //键值对个数
         int s = m.size();
         //如果参数map不为空
         if (s > 0) {
@@ -483,7 +484,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                  */
                 if (!onlyIfAbsent || oldValue == null)
                     e.value = value;
-                // 访问后回调
+                // 访问后回调，将最近访问的node移动到桶的最后
                 afterNodeAccess(e);
                 // 返回旧值
                 return oldValue;
@@ -494,20 +495,18 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         // 键值对数目超过阈值时，进行rehash
         if (++size > threshold)
             resize();
-        // 插入后回调
+        // 插入后回调，可能移除最老的Node
         afterNodeInsertion(evict);
         return null;
     }
 
     /**
-     * 对table进行初始化或者扩容。
-     * 如果table为null，则对table进行初始化
-     * 如果对table扩容，因为每次扩容都是翻倍，与原来计算（n-1）&hash的结果相比，节点要么就在原来的位置，要么就被分配到“原位置+旧容量”这个位置
+     * 对table者扩容
+     * 因为每次扩容都是翻倍，与原来计算（n-1）&hash的结果相比，节点要么就在原来的位置，要么就被分配到“原位置+旧容量”这个位置
      * resize的步骤总结为:
-     * 1.计算扩容后的容量，临界值。
-     * 2.将hashMap的临界值修改为扩容后的临界值
+     * 1.计算扩容后的容量，临界值；
+     * 2.赋值给新数组的容量，临界值；
      * 3.根据扩容后的容量新建数组，然后将hashMap的table的引用指向新数组。
-     * 4.将旧数组的元素复制到table中。
      *
      * @return the table
      */
@@ -518,7 +517,9 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
         //原来数组扩容的临界值
         int oldThr = threshold;
+        //新数组容量和新数组扩容的临界值
         int newCap, newThr = 0;
+
         //如果扩容前的容量 > 0
         if (oldCap > 0) {
             //如果原来的数组长度大于最大值(2^30)
@@ -547,6 +548,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ?
                     (int) ft : Integer.MAX_VALUE);
         }
+
+
         //将扩容后hashMap的临界值设置为newThr
         threshold = newThr;
         //创建新的table，初始化容量为newCap
@@ -554,6 +557,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         Node<K, V>[] newTab = (Node<K, V>[]) new Node[newCap];
         //修改hashMap的table为新建的newTab
         table = newTab;
+
+
         //如果旧table不为空，将旧table中的元素复制到新的table中
         if (oldTab != null) {
             //遍历旧哈希表的每个桶，将旧哈希表中的桶复制到新的哈希表中
@@ -585,7 +590,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                                 else
                                     loTail.next = e;
                                 loTail = e;
-                            } else {// 原索引+oldCap
+                            } else { // 原索引+oldCap
                                 if (hiTail == null)
                                     hiHead = e;
                                 else
