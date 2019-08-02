@@ -737,9 +737,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     //删除node
                     tab[index] = node.next;
                 else//如果桶内的结构为链表，使用链表删除元素的方式删除node
-                    p.next = node.next;
+                    p.next = node.next;//此时p为要删除的节点的上一个节点
                 ++modCount;//结构性修改次数+1
                 --size;//哈希表大小-1
+                //删除节点
                 afterNodeRemoval(node);
                 return node;//返回被删除的node
             }
@@ -1026,6 +1027,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         if ((e = getNode(hash(key), key)) != null &&
                 ((v = e.value) == oldValue || (v != null && v.equals(oldValue)))) {
             e.value = newValue;
+            //将最近修改的node放到链的最后
             afterNodeAccess(e);
             return true;
         }
@@ -1051,6 +1053,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         return null;
     }
 
+
+    /**
+     * If the specified key is not already associated with a value (or is mapped to {@code null})
+     * 如果key没有对应的value,则通过函数映射赋值给key的value
+     * @param key
+     * @param mappingFunction
+     * @return
+     */
     @Override
     public V computeIfAbsent(K key,
                              Function<? super K, ? extends V> mappingFunction) {
@@ -1060,19 +1070,21 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         Node<K, V>[] tab;
         Node<K, V> first;
         int n, i;
+        //标记链的长度，以判断是否转化为树
         int binCount = 0;
         TreeNode<K, V> t = null;
         Node<K, V> old = null;
         if (size > threshold || (tab = table) == null ||
                 (n = tab.length) == 0)
             n = (tab = resize()).length;
-        if ((first = tab[i = (n - 1) & hash]) != null) {
+        if ((first = tab[i = (n - 1) & hash]) != null) { //有桶
             if (first instanceof TreeNode)
+                //如果第一个节点属于TreeNode，则获取对应的树节点
                 old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
-            else {
+            else {//第一个节点属于链表节点
                 Node<K, V> e = first;
                 K k;
-                do {
+                do {//循环遍历找到参数key对应的节点
                     if (e.hash == hash &&
                             ((k = e.key) == key || (key != null && key.equals(k)))) {
                         old = e;
@@ -1082,31 +1094,48 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 } while ((e = e.next) != null);
             }
             V oldValue;
-            if (old != null && (oldValue = old.value) != null) {
+            if (old != null && (oldValue = old.value) != null) {//如果旧值不为null,直接返回旧值，否则，按照函数映射给key
+                //将找到的节点移动到链的最后
                 afterNodeAccess(old);
                 return oldValue;
             }
         }
+        //通过函数映射出对应输出值
         V v = mappingFunction.apply(key);
-        if (v == null) {
+        if (v == null) {                       //映射值为null
             return null;
-        } else if (old != null) {
+        } else if (old != null) {              //节点不为null,映射值不为null
+            //映射值赋值给旧节点的值
             old.value = v;
+            //将最近访问的节点放到链的最后
             afterNodeAccess(old);
             return v;
-        } else if (t != null)
+        } else if (t != null)                   //节点为null，映射值不为null，并且第一个节点是TreeNode
+            //将第一个节点替换成新创建的树节点
             t.putTreeVal(this, tab, hash, key, v);
-        else {
+        else {                                 //旧值为null，映射值不为null,并且第一个节点是链表节点
+                                               //将第一个节点替换成新创建的链节点
             tab[i] = newNode(hash, key, v, first);
             if (binCount >= TREEIFY_THRESHOLD - 1)
+                //符合条件，链表转化为树
                 treeifyBin(tab, hash);
         }
         ++modCount;
         ++size;
+        //可能移除最老的节点
         afterNodeInsertion(true);
         return v;
     }
 
+
+    /**
+     * If the value for the specified key is present and non-null, attempts to
+     * compute a new mapping given the key and its current mapped value.
+     * 如果key有对应的value,则将函数映射赋值给key的value
+     * @param key
+     * @param remappingFunction
+     * @return
+     */
     public V computeIfPresent(K key,
                               BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         if (remappingFunction == null)
@@ -1115,18 +1144,30 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         V oldValue;
         int hash = hash(key);
         if ((e = getNode(hash, key)) != null &&
-                (oldValue = e.value) != null) {
+                (oldValue = e.value) != null) {//节点不为null，并且节点值也不为null
+            //通过参数key和旧值，输出映射值
             V v = remappingFunction.apply(key, oldValue);
             if (v != null) {
+                                       //旧节点不为null,映射值不为null,将映射值赋值给节点的值
                 e.value = v;
+                //将节点放到链表的最后
                 afterNodeAccess(e);
                 return v;
             } else
+                                       //旧节点不为null,映射值为null,将该节点删除
                 removeNode(hash, key, null, false, true);
         }
+                                        //其他情况，直接返回null
         return null;
     }
 
+
+    /**
+     * 试图利用key和函数映射，确定key的value
+     * @param key
+     * @param remappingFunction
+     * @return
+     */
     @Override
     public V compute(K key,
                      BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
@@ -1160,18 +1201,20 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
         V oldValue = (old == null) ? null : old.value;
         V v = remappingFunction.apply(key, oldValue);
-        if (old != null) {
-            if (v != null) {
+        if (old != null) {//旧节点不为null
+            if (v != null) {                        //旧节点不为null，映射值不为null
+                //映射值赋值给节点值
                 old.value = v;
                 afterNodeAccess(old);
-            } else
+            } else                                  //旧节点不为null，映射值为null
                 removeNode(hash, key, null, false, true);
-        } else if (v != null) {
-            if (t != null)
+        } else if (v != null) {                     //旧节点为null,映射值不为null
+            if (t != null)//第一个节点是树节点，替换成新创建的节点
                 t.putTreeVal(this, tab, hash, key, v);
-            else {
+            else {//第一个节点是链节点，替换成新创建的节点
                 tab[i] = newNode(hash, key, v, first);
                 if (binCount >= TREEIFY_THRESHOLD - 1)
+                    //链表转化为树
                     treeifyBin(tab, hash);
             }
             ++modCount;
@@ -1181,6 +1224,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         return v;
     }
 
+    /**
+     * 如果key没有对应的value,则将不为null的参数value赋值给key的value;
+     * 如果key有对应的value,则将函数映射赋值给key的value
+     * @param key
+     * @param value
+     * @param remappingFunction
+     * @return
+     */
     @Override
     public V merge(K key, V value,
                    BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
@@ -1214,23 +1265,23 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 } while ((e = e.next) != null);
             }
         }
-        if (old != null) {
+        if (old != null) {//有该节点
             V v;
-            if (old.value != null)
+            if (old.value != null)                      //节点值不为null,以旧值和入参值，输出映射值
                 v = remappingFunction.apply(old.value, value);
-            else
+            else                                        //节点值为null,入参value赋值给v
                 v = value;
-            if (v != null) {
+            if (v != null) {                            //节点值不为null，映射值也不为null,则v赋值给旧值
                 old.value = v;
                 afterNodeAccess(old);
-            } else
+            } else                                     //无节点值，或有节点值但映射值为null,删除该节点
                 removeNode(hash, key, null, false, true);
             return v;
         }
-        if (value != null) {
-            if (t != null)
+        if (value != null) {//有入参value
+            if (t != null)//有入参value,并且第一个节点是树节点
                 t.putTreeVal(this, tab, hash, key, value);
-            else {
+            else {//有入参value,并且第一个节点是链节点
                 tab[i] = newNode(hash, key, value, first);
                 if (binCount >= TREEIFY_THRESHOLD - 1)
                     treeifyBin(tab, hash);
@@ -1242,6 +1293,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         return value;
     }
 
+    /**
+     * 消费每一个node
+     * @param action
+     */
     @Override
     public void forEach(BiConsumer<? super K, ? super V> action) {
         Node<K, V>[] tab;
@@ -1258,6 +1313,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
+
+    /**
+     * 映射每一个node
+     * @param function
+     */
     @Override
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
         Node<K, V>[] tab;
