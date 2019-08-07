@@ -20,6 +20,10 @@ import java.util.function.Function;
  * 但是当位于一个数组中的元素较多，即hash值相等的元素较多时，通过key值依次查找的效率较低。
  * 而JDK1.8中，HashMap采用数组+链表+红黑树实现，当链表长度超过阈值8时，将链表转换为红黑树，这样大大减少了查找时间。
  * 原本Map.Entry接口的实现类Entry改名为了Node。转化为红黑树时改用另一种实现TreeNode。
+ *
+ * Float.isNaN(float v):判断v是不是一个数
+ * assert[boolean表达式]：java的断言，如果表达式为true,则程序继续执行，若为false,则抛出AssertionError错误，并终止程序执行。须编译器
+ *  开启断言
  */
 public class HashMap<K, V> extends AbstractMap<K, V>
         implements Map<K, V>, Cloneable, Serializable {
@@ -1341,7 +1345,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     /**
      * 浅拷贝。
      * clone方法虽然生成了新的HashMap对象，新的HashMap中的table数组虽然也是新生成的，但是数组中的元素还是引用以前的HashMap中的元素。
-     * 这就导致在对HashMap中的元素进行修改的时候，即对数组中元素进行修改，会导致原对象和clone对象都发生改变，但进行新增或删除就不会影响对方，因为这相当于是对数组做出的改变，clone对象新生成了一个数组。
+     * 这就导致在对HashMap中的元素进行修改的时候，即对数组中元素进行修改，会导致原对象和clone对象都发生改变，但进行新增或删除就不会影响对方，
+     * 因为这相当于是对数组做出的改变，clone对象新生成了一个数组。
      *
      * @return hashMap的浅拷贝
      */
@@ -1397,7 +1402,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * 到ObjectOutputStream中读取hashMap
-     * 将hashMap的总容量capacity、实际容量size、键值对映射读取出来
+     * 将hashMap的总容量capacity、实际容量size、键值对映射读取出来(按写入的顺序读取)
      */
     private void readObject(java.io.ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -1531,8 +1536,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         final HashMap<K, V> map;
         Node<K, V> current;          //记录当前的节点
         int index;                  //当前节点的下标
-        int fence;                  //堆大小
-        int est;                    //估计大小
+        int fence;                  //堆大小（容量）
+        int est;                    //估计大小（实际大小）
         int expectedModCount;       // for comodification checks
 
         HashMapSpliterator(HashMap<K, V> m, int origin,
@@ -1878,14 +1883,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         /**
-         * 确保root是桶中的第一个元素 ，将root移到中中的第一个
+         * 确保root是桶中的第一个元素 ，将root移到数中的第一个
          */
         static <K, V> void moveRootToFront(Node<K, V>[] tab, TreeNode<K, V> root) {
             int n;
             if (root != null && tab != null && (n = tab.length) > 0) {
                 int index = (n - 1) & root.hash;
                 TreeNode<K, V> first = (TreeNode<K, V>) tab[index];
-                if (root != first) {
+                if (root != first) {//root不是第一个数节点，将root放到链首，后面链上之前的首节点
                     Node<K, V> rn;
                     tab[index] = root;
                     TreeNode<K, V> rp = root.prev;
