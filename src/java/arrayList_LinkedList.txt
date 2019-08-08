@@ -1,4 +1,5 @@
 ArrayList:
+线程非安全;值允许为null
 底层基于数组实现
 属性包括Object[]、默认大小10、数组大小size
 按1.5倍扩容
@@ -7,6 +8,7 @@ ArrayList:
 
 
 LinkedList:
+线程非安全;值允许为null
 底层是基于链表实现的
 属性包括Node<E>、firstNode<E>、LastNode<E>、链表大小size
 Node<E>中包括元素E、前指针、后指针

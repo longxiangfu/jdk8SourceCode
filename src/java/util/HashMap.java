@@ -24,6 +24,7 @@ import java.util.function.Function;
  * Float.isNaN(float v):判断v是不是一个数
  * assert[boolean表达式]：java的断言，如果表达式为true,则程序继续执行，若为false,则抛出AssertionError错误，并终止程序执行。须编译器
  *  开启断言
+ * System.idectiryHashCode(Object ob):计算ob的hashCode
  */
 public class HashMap<K, V> extends AbstractMap<K, V>
         implements Map<K, V>, Cloneable, Serializable {
@@ -1908,7 +1909,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         /**
-         * 查找hash为h，key为k的节点
+         * 从当前节点开始查找hash为h，key为k的节点
          */
         final TreeNode<K, V> find(int h, Object k, Class<?> kc) {
             TreeNode<K, V> p = this;
@@ -1920,7 +1921,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     p = pl;
                 else if (ph < h)
                     p = pr;
-                else if ((pk = p.key) == k || (k != null && k.equals(pk)))
+                else if ((pk = p.key) ==  k|| (k != null && k.equals(pk)))
                     return p;
                 else if (pl == null)
                     p = pr;
@@ -1939,7 +1940,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         /**
-         * 获取树节点，通过根节点查找
+         * 获取树节点，通过根节点或当前节点查找
          */
         final TreeNode<K, V> getTreeNode(int h, Object k) {
             return ((parent != null) ? root() : this).find(h, k, null);
