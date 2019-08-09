@@ -58,7 +58,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     static final int UNTREEIFY_THRESHOLD = 6;
 
     /**
-     * 桶可能被转化为树形结构的最小容量。当哈希表的大小超过这个阈值，才会把链式结构转化成树型结构，否则仅采取扩容来尝试减少冲突。
+     * 桶可能被转化为树形结构时的数组最小容量。当哈希表的大小超过这个阈值，才会把链式结构转化成树型结构，否则仅采取扩容来尝试减少冲突。
      * 应该至少4*TREEIFY_THRESHOLD来避免扩容和树形结构化之间的冲突。
      */
     static final int MIN_TREEIFY_CAPACITY = 64;
