@@ -1,0 +1,27 @@
+ArrayList:
+线程非安全;值允许为null
+底层基于数组实现
+属性包括Object[]、默认大小10、数组大小size
+按1.5倍扩容
+数组中元素在内存中是连续的
+底层的操作都是元素的复制：System.arrayCopy()、Arrays.copyOf()
+
+
+LinkedList:
+线程非安全;值允许为null
+底层是基于链表实现的
+属性包括Node<E>、firstNode<E>、LastNode<E>、链表大小size
+Node<E>中包括元素E、前指针、后指针
+链表中节点在内存中是不连续的，节点之间通过前后指针指向
+底层的操作都是节点前指针和后指针重新指向的过程
+可以当作链表、栈、队列（双端队列）
+
+
+增删：时间维度
+    从头：ArrayList>LinkedList      ArrayList需要复制所有元素；LinkedList只需要将新元素指针指向原来的第一个元素即可
+    从尾：ArrayList<LinkedList      ArrayList不扩容的情况下直接在末尾添加；LinkedList也是直接在末尾添加，不过需要指针指向
+    中间：ArrayList<LinkedList      都比较慢
+
+查询：时间维度
+    普通for循环：ArrayList<LinkedList    ArrayList内存连续，遍历非常快；LinkedList找到每个元素，都要遍历之前或之后的所有元素
+    迭代器(基于游标)：  ArrayList ~ LinkedList

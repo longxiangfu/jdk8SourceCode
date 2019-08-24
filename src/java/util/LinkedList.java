@@ -7,9 +7,12 @@ import java.util.function.Consumer;
  * LinkedList既然是通过双向链表去实现的，那么它可以被当作堆栈、队列或双端队列进行操作。并且其顺序访问非常高效，而随机访问效率比较低。
  * 内部方法，注释会描述为节点的操作(如删除第一个节点)，公开的方法会描述为元素的操作(如删除第一个元素)
  * 注意，此实现不是同步的。 如果多个线程同时访问一个LinkedList实例，而其中至少一个线程从结构上修改了列表，那么它必须保持外部同步。
+ *
  * LinkedList不是线程安全的，如果在多线程中使用（修改），需要在外部作同步处理。
  * 这通常是通过同步那些用来封装列表的对象来实现的。
- * 但如果没有这样的对象存在，则该列表需要运用{@link Collections#synchronizedList Collections.synchronizedList}来进行“包装”，该方法最好是在创建列表对象时完成，为了避免对列表进行突发的非同步操作。
+ *
+ * 但如果没有这样的对象存在，则该列表需要运用{@link Collections#synchronizedList Collections.synchronizedList}来进行“包装”，
+ * 该方法最好是在创建列表对象时完成，为了避免对列表进行突发的非同步操作。
  */
 
 public class LinkedList<E>
@@ -159,7 +162,7 @@ public class LinkedList<E>
     /**
      * 删除指定非空结点，返回存储的元素
      */
-    E unlink(Node<E> x) {
+    E unlink(Node<E> x) {//改变链的指向关系即可
         // 获取指定非空结点存储的元素
         final E element = x.item;
         // 获取指定非空结点的后继结点
@@ -176,7 +179,7 @@ public class LinkedList<E>
             first = next;
         } else {
             prev.next = next;
-            x.prev = null;
+            x.prev = null;//虽然prev.next = next，但是当前节点仍指向前驱节点，所以将当前节点的前驱节点赋值为null
         }
 
         /**
@@ -538,6 +541,7 @@ public class LinkedList<E>
 
     /**
      * 获取指定下标的结点，index从0开始
+     * 获取某节点的元素，只能遍历获取（数据结构决定）
      */
     Node<E> node(int index) {
         // 如果指定下标<一半元素数量，则从首结点开始遍历
@@ -611,8 +615,9 @@ public class LinkedList<E>
         return -1;
     }
 
-    // 队列操作
 
+
+    // 队列操作
     /**
      * 出队（从前端），获得第一个元素，不存在会返回null，不会删除元素（节点）
      * 获取首元素
@@ -680,8 +685,9 @@ public class LinkedList<E>
         return add(e);
     }
 
-    // 双端队列操作
 
+
+    // 双端队列操作
     /**
      * 入队（从前端），始终返回true
      *
@@ -768,6 +774,8 @@ public class LinkedList<E>
         return (l == null) ? null : unlinkLast(l);
     }
 
+
+    //栈操作
     /**
      * 入栈，从前面添加
      *
@@ -855,15 +863,24 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @see List#listIterator(int)
      */
+    /**
+     * 返回迭代器，指针指向制定的索引节点
+     * @param index
+     * @return
+     */
     public ListIterator<E> listIterator(int index) {
         checkPositionIndex(index);
         return new ListItr(index);
     }
 
     private class ListItr implements ListIterator<E> {
+        //最后返回的node
         private Node<E> lastReturned;
+        //下一个node
         private Node<E> next;
+        //下一个索引
         private int nextIndex;
+        //期望修改次数
         private int expectedModCount = modCount;
 
         ListItr(int index) {
@@ -876,11 +893,11 @@ public class LinkedList<E>
             return nextIndex < size;
         }
 
+        //获取下一个node的元素
         public E next() {
             checkForComodification();
             if (!hasNext())
                 throw new NoSuchElementException();
-
             lastReturned = next;
             next = next.next;
             nextIndex++;
@@ -891,6 +908,7 @@ public class LinkedList<E>
             return nextIndex > 0;
         }
 
+        //获取上一个node的元素
         public E previous() {
             checkForComodification();
             if (!hasPrevious())
@@ -909,14 +927,15 @@ public class LinkedList<E>
             return nextIndex - 1;
         }
 
+        //移除最后返回的node
         public void remove() {
             checkForComodification();
             if (lastReturned == null)
                 throw new IllegalStateException();
 
             Node<E> lastNext = lastReturned.next;
-            unlink(lastReturned);
-            if (next == lastReturned)
+            unlink(lastReturned);//移除之后，lastTurned中所有属性都为null
+            if (next == lastReturned)//现阶段想象不出next中所有属性也都为null的场景
                 next = lastNext;
             else
                 nextIndex--;
@@ -924,6 +943,7 @@ public class LinkedList<E>
             expectedModCount++;
         }
 
+        //设置最后返回node的元素
         public void set(E e) {
             if (lastReturned == null)
                 throw new IllegalStateException();
@@ -931,6 +951,7 @@ public class LinkedList<E>
             lastReturned.item = e;
         }
 
+        //在下一个node前插入指定元素的节点
         public void add(E e) {
             checkForComodification();
             lastReturned = null;
@@ -942,6 +963,7 @@ public class LinkedList<E>
             expectedModCount++;
         }
 
+        //索引（包括索引）之后节点的遍历，用Consumer进行处理
         public void forEachRemaining(Consumer<? super E> action) {
             Objects.requireNonNull(action);
             while (modCount == expectedModCount && nextIndex < size) {
@@ -1035,7 +1057,7 @@ public class LinkedList<E>
 
         // 插入结点
         for (Node<E> x = first; x != null; x = x.next)
-            clone.add(x.item);
+            clone.add(x.item);//将之前list中节点添加到新list中，节点还是指向原来的节点，所以是浅拷贝
         // 返回克隆后的对象引用
         return clone;
     }
@@ -1053,6 +1075,10 @@ public class LinkedList<E>
      *
      * @return an array containing all of the elements in this list
      * in proper sequence
+     */
+    /**
+     * list转为对象数组
+     * @return
      */
     public Object[] toArray() {
         Object[] result = new Object[size];
@@ -1103,6 +1129,7 @@ public class LinkedList<E>
     @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
         if (a.length < size)
+            //创建按一个确定类型和确定大小的数组
             a = (T[]) java.lang.reflect.Array.newInstance(
                     a.getClass().getComponentType(), size);
         int i = 0;
