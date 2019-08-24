@@ -281,7 +281,7 @@ public class Hashtable<K, V>
                 // 重新计算每个Entry链表的表头索引（rehash）
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
                 // 开辟链表节点
-                e.next = (Entry<K, V>) newMap[index];
+                e.next = (Entry<K, V>) newMap[index];//不懂这里
                 // 拷贝
                 newMap[index] = e;
             }
