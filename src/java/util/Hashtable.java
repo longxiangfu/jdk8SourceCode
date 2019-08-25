@@ -281,7 +281,7 @@ public class Hashtable<K, V>
                 // 重新计算每个Entry链表的表头索引（rehash）
                 int index = (e.hash & 0x7FFFFFFF) % newCapacity;
                 // 开辟链表节点
-                e.next = (Entry<K, V>) newMap[index];//这里有点不理解
+                e.next = (Entry<K, V>) newMap[index];
                 // 拷贝
                 newMap[index] = e;
             }
@@ -306,7 +306,7 @@ public class Hashtable<K, V>
 
         // Creates the new entry.
         @SuppressWarnings("unchecked")
-        Entry<K, V> e = (Entry<K, V>) tab[index];//获取下一个Entry
+        Entry<K, V> e = (Entry<K, V>) tab[index];
         // 和HashMap不同，Hashtable选择把新插入的元素放到链表最前边，而且没有使用红黑树
         tab[index] = new Entry<>(hash, key, value, e);
         count++;
@@ -347,14 +347,13 @@ public class Hashtable<K, V>
         @SuppressWarnings("unchecked")
         Entry<K, V> entry = (Entry<K, V>) tab[index];
         for (; entry != null; entry = entry.next) {
-            //如果key存在，则将新value替换旧value
             if ((entry.hash == hash) && entry.key.equals(key)) {
                 V old = entry.value;
                 entry.value = value;
                 return old;
             }
         }
-        // 如果key不存在，就调用addEntry方法加入
+        // 如果key对应的值不存在，就调用addEntry方法加入
         addEntry(hash, key, value, index);
         return null;
     }
